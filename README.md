@@ -4,7 +4,7 @@ This repository contains the Artifact Evaluation (AE) instructions and experimen
 
 > **RS-Infer: A Fast and Secure LLM Inference System for Mobile Devices with Recallable Resource Isolation**
 
-The artifact evaluates the main performance results reported in the paper. The experiments use a dedicated host connected to the reference RK3588 development board. This public repository mirrors the instructions and wrappers available on that host; the complete source tree, datasets, models, toolchains, and board are provided through the remote evaluation environment.
+The artifact evaluates the main performance results reported in the paper. The experiments use a dedicated host connected to the reference RK3588 development board. This public repository mirrors the instructions and wrappers available through the remote evaluation environment.
 
 Thank you for taking the time to evaluate this artifact. We welcome questions and reports of unexpected behavior through the HotCRP artifact-evaluation discussion.
 
@@ -36,88 +36,58 @@ Access to the evaluation machine is provisioned with an SSH public key. Please u
 
 If access fails, please report the exact SSH error in HotCRP. Do not post private credentials or private-key material.
 
+## Evaluation Scope and Privacy
+
+The evaluation machine is a shared personal system prepared specifically for this AE. Please use only the commands documented in this repository.
+
+Please do not inspect, modify, copy, move, or delete host configuration, files, repositories, credentials, services, or data outside the designated AE directories. Content outside the AE workspace and generated result directory is private. The provided wrappers may internally access prepared dependencies; reviewers should not access or modify those dependencies manually. Thank you for respecting this boundary.
+
+The evaluation has one development board. All experiments must run serially. Run exactly one AE command at a time across all terminal and SSH sessions, and wait for it to finish before starting another experiment. Do not launch experiments in parallel.
+
 ## Evaluation Workspace
 
-After logging in, the prepared workspace is located at:
+Run all commands from the prepared reviewer directory:
 
 ```text
-/home/santongding/CodeSpace/RecaLLMem-new
+/home/santongding/CodeSpace/RecaLLMem-new/art-eval
 ```
 
-The relevant directories are:
+Environment preparation, execution, retries, and result collection are handled by the wrappers. No manual configuration is required.
 
-| Path | Purpose |
-| --- | --- |
-| `art-eval/` | Reviewer-facing wrappers and this guide |
-| `RecaLLMem/` | Inference engine, benchmark code, and build/test scripts |
-| `linux/` | Linux kernel source |
-| `optee_os/` | OP-TEE OS source |
-| `build/` | Platform build configuration |
-| `test-ae/` | Raw logs and generated summaries |
+## Running the Artifact
 
-The board address is maintained by the prepared environment in `RecaLLMem/find-ip.stamp`. Reviewers do not need to configure the board address manually.
+The following commands are the supported one-command entry points. Expected durations are estimates for a clean run. A resumed run may be shorter because valid results are reused.
 
-## Quick Start
+| Artifact | Expected duration | One-command invocation |
+| --- | ---: | --- |
+| Table 1 | 30-60 minutes | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/table_1 && ./run.sh` |
+| Figure 5 | 1-2 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_5 && ./run.sh` |
+| Figure 6 | 30-60 minutes | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_6 && ./run.sh` |
+| Figure 7 | 2-4 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_7 && ./run.sh` |
+| Figure 8 | 2-4 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_8 && ./run.sh` |
+| Figure 9 | 1-3 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_9 && ./run.sh` |
+| Figure 10 | 2-4 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_10 && ./run.sh` |
+| Figure 11 | 30-60 minutes | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_11 && ./run.sh` |
+| SPEC CPU 2017 | 16-20 hours | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/spec_cpu && ./run.sh` |
+| SQLite interference | 20-40 minutes | `cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/sqlite_interference && ./run.sh` |
 
-Each supported figure has a one-command wrapper. Run the preflight check first; it verifies the required branches and the underlying test entry without compiling or using the board.
+To check an entry point without starting an experiment, append `--check` to the same command. For example:
 
 ```bash
-cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/figure_1
-./run.sh --check
+cd /home/santongding/CodeSpace/RecaLLMem-new/art-eval/table_1 && ./run.sh --check
 ```
 
-Run the complete experiment from the same directory:
-
-```bash
-./run.sh
-```
-
-Replace `figure_1` with the desired figure directory. The wrapper verifies the required repository branches, switches branches only when the affected repositories are clean, and then starts the figure-specific end-to-end test. It never discards local changes.
-
-Valid existing results are reused. If a terminal disconnects or a test is interrupted, reconnect to the machine and run the same command again. Completed cases will be skipped and incomplete cases will be retried by the underlying test.
-
-## Supported Experiments
-
-The estimates below are for a clean run on the reference board. Kernel rebuilds, storage state, board load, and retries may change the total time.
-
-| Figure | Evaluation | Approximate time | Run directory |
-| --- | --- | --- | --- |
-| Figure 1 | CMA and MMAP allocation latency under varying allocation sizes and background memory pressure | 20-40 minutes | `art-eval/figure_1` |
-| Figure 2 | Llama3.1 8B TTFT breakdown across allocation, loading, decryption, computation, and other time | 5-10 minutes | `art-eval/figure_2` |
-| Figure 5 | TTFT across inference baselines, models, and prompt lengths | 1-2 hours | `art-eval/figure_5` |
-| Figure 6 | Decode throughput and RS-Infer overhead across four models | 30-60 minutes | `art-eval/figure_6` |
-| Figure 7 | TTFT sensitivity to background memory pressure | 2-4 hours | `art-eval/figure_7` |
-| Figure 8 | Cached two-model combinations and dataset-weighted TTFT | 2-4 hours | `art-eval/figure_8` |
-| Figure 9 | End-to-end latency of multi-model application workflows | 1-3 hours | `art-eval/figure_9` |
-| Figure 10 | Normal-world application performance and secure-inference TTFT under cache policies | 2-4 hours | `art-eval/figure_10` |
-| Figure 11 | Incremental TTFT benefit of the RS-Infer optimizations | 30-60 minutes | `art-eval/figure_11` |
-
-Figures 1, 2, 5-9, and 11 use:
-
-| Repository | Branch |
-| --- | --- |
-| `RecaLLMem` | `art-eval-pre` |
-| `linux` | `art-eval-pre` |
-
-Figure 10 uses:
-
-| Repository | Branch |
-| --- | --- |
-| `RecaLLMem` | `art-eval` |
-| `linux` | `sysbench-novirt` |
-| `build` | `sysbench-novirt` |
-
-Branch selection is handled by each wrapper. Manual branch changes are not required.
+If a terminal disconnects or a run is interrupted, reconnect and invoke the same command again. Valid completed cases are reused, while incomplete cases are retried.
 
 ## Results
 
 Results are written under:
 
 ```text
-/home/santongding/CodeSpace/RecaLLMem-new/test-ae/figure_N
+/home/santongding/CodeSpace/RecaLLMem-new/test-ae/<artifact>
 ```
 
-Depending on the figure, the result directory contains:
+Depending on the artifact, the result directory contains:
 
 - raw inference or workload logs;
 - build and orchestration logs;
@@ -129,12 +99,13 @@ Please retain the raw logs when checking a result against the paper. The summary
 
 ## Operational Notes
 
-- Run only one figure at a time. The experiments share one development board and may rebuild or flash its kernel.
+- Run only one AE experiment at a time. This requirement applies across all users, terminals, SSH sessions, and `tmux` sessions because every experiment shares the same development board.
+- Wait for the active command to finish completely before starting another command. Do not parallelize experiments.
 - Do not start unrelated workloads on the host or board during measurement.
-- Do not modify the project source or benchmark configuration unless requested during artifact discussion.
-- A branch switch is refused when a repository contains local changes. This protects previous results and reviewer modifications from accidental loss.
+- Do not manually inspect or modify files, configuration, repositories, services, or data outside the designated AE and result directories. Other content on the machine is private.
+- Do not modify artifact source or benchmark configuration unless explicitly requested through the HotCRP artifact discussion.
 - Long-running experiments are best executed inside `tmux` or another persistent terminal session.
-- The first run is the slowest because it may rebuild the kernel and inference engine. Resumed runs reuse valid records.
+- The first run may take longer while the prepared environment is initialized. Resumed runs reuse valid records.
 
 Example persistent session:
 
@@ -152,4 +123,4 @@ tmux attach -t rsinfer-ae
 
 ## Support
 
-Please use the HotCRP artifact-evaluation discussion for questions, access problems, unexpected failures, or discrepancies with the paper. Include the figure number, the command that was run, and the relevant error or log path. We will respond there so that the evaluation discussion remains auditable and available to the AE reviewers.
+Please use the HotCRP artifact-evaluation discussion for questions, access problems, unexpected failures, or discrepancies with the paper. Include the artifact name, the command that was run, and the relevant error or log path. We will respond there so that the evaluation discussion remains auditable and available to the AE reviewers.
