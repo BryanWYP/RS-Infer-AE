@@ -26,12 +26,18 @@ Access to the evaluation machine is provisioned with an SSH public key. Please u
 
 3. Post the complete public-key line in a comment on the paper's HotCRP artifact-evaluation discussion. Please submit only the `.pub` content. Never post or send the private key.
 
-4. The artifact authors will install the key and reply through HotCRP with the assigned SSH username and host address.
+4. The artifact authors will install the key and confirm access through HotCRP.
 
-5. Connect to the machine using the supplied values:
+5. Connect to the evaluation machine through the two jump hosts:
 
    ```bash
-   ssh -i ~/.ssh/rsinfer_ae <ae-user>@<ae-host>
+   ssh -J vyatta@202.120.40.82,xc@202.120.40.84 santongding@192.168.1.130
+   ```
+
+   If the dedicated key created above is not loaded into `ssh-agent`, specify it explicitly:
+
+   ```bash
+   ssh -i ~/.ssh/rsinfer_ae -J vyatta@202.120.40.82,xc@202.120.40.84 santongding@192.168.1.130
    ```
 
 If access fails, please report the exact SSH error in HotCRP. Do not post private credentials or private-key material.
